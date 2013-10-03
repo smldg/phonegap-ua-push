@@ -16,8 +16,6 @@
 
     <dependency id="org.apache.cordova.core.device" url="https://git-wip-us.apache.org/repos/asf/cordova-plugin-device.git" commit="master" subdir="." />
 
-    <asset src="www/PushNotification.js" target="js/PushNotification.js" />
-
     <!-- android -->
     <platform name="android">
        
