@@ -72,7 +72,7 @@
         <source-file src="src/android/urbanairship-lib-3.0.0.jar" target-dir="libs/" />
         
         <js-module src="www/PushNotification.js" name="PushNotification">
-	        <clobbers target="plugins.PushNotification" />
+	        <clobbers target="plugins.pushNotification" />
 	    </js-module>
     </platform>
     
@@ -86,7 +86,7 @@
         </config-file>
         
         <js-module src="www/PushNotification.js" name="PushNotification">
-	        <clobbers target="plugins.PushNotification" />
+	        <clobbers target="plugins.pushNotification" />
 	    </js-module>
         
         <header-file src="src/ios/PushNotificationPlugin.h" />
