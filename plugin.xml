@@ -70,6 +70,10 @@
         <source-file src="src/android/PushReceiver.java" target-dir="src/com/urbanairship/phonegap" />
         <source-file src="src/android/PushAutopilot.java" target-dir="src/com/urbanairship/phonegap" />
         <source-file src="src/android/urbanairship-lib-3.0.0.jar" target-dir="libs/" />
+        
+        <js-module src="www/PushNotification.js" name="PushNotification">
+	        <clobbers target="plugins.PushNotification" />
+	    </js-module>
     </platform>
     
     <!-- ios -->
@@ -80,6 +84,10 @@
                 <param name="onload" value="true" />
             </feature>
         </config-file>
+        
+        <js-module src="www/PushNotification.js" name="PushNotification">
+	        <clobbers target="plugins.PushNotification" />
+	    </js-module>
         
         <header-file src="src/ios/PushNotificationPlugin.h" />
         <source-file src="src/ios/PushNotificationPlugin.m" />
