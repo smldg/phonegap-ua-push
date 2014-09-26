@@ -1,5 +1,5 @@
 /*
-Copyright 2009-2013 Urban Airship Inc. All rights reserved.
+Copyright 2009-2014 Urban Airship Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -25,19 +25,51 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import <Foundation/Foundation.h>
 
+#import "UAInboxMessageListDelegate.h"
 #import "UAUser.h"
-#import "UAObservable.h"
+#import "UADisposable.h"
+
+
+/**
+ * A completion block for message list operations.
+ */
+typedef void (^UAInboxMessageListCallbackBlock)(void);
+
+/**
+ * NSNotification posted when the message list is about to update.
+ *
+ * Note: this notification is posted regardless of the type of update (retrieval, batch).
+ */
+extern NSString * const UAInboxMessageListWillUpdateNotification;
+
+/**
+ * NSNotification posted when the message list is finished updating.
+ *
+ * Note: this notification is posted regardless of the type of update (retrieval, batch)
+ * and regardless of the success/failure of the underlying operation.
+ */
+extern NSString * const UAInboxMessageListUpdatedNotification;
 
 @class UAInboxMessage;
 
 /**
- * An emum expressing the two possible batch update commands,
+ * An enum expressing the two possible batch update commands,
  * delete and mark-as-read.
+ *
+ * @deprecated As of 5.0.
  */
-typedef enum {
+typedef NS_ENUM(NSInteger, UABatchUpdateCommand) {
+    /**
+     * Update the message list by marking messages as read.
+     */
     UABatchReadMessages,
-    UABatchDeleteMessages,
-} UABatchUpdateCommand;
+
+    /**
+     * Update the message list by deleting messages.
+     */
+    UABatchDeleteMessages
+};
+
 
 /**
  * The primary interface to the contents of the inbox.
@@ -45,81 +77,153 @@ typedef enum {
  * delete or mark messages as read, retrieve individual messages from the
  * list.
  */
-@interface UAInboxMessageList : UAObservable
-/**
- * The shared singleton accessor.
- */
-+ (UAInboxMessageList *)shared;
+@interface UAInboxMessageList : NSObject
+
 
 /**
- * Teardown method.  This method is called as appropriate by the library,
- * and thus you will not oridinarlly need to call it directly.
+ * Marks messages read. They will be marked locally as read and synced with
+ * Urban Airship on the next message retrieval.
+ *
+ * @param messages The array of messages to be marked read.
+ * @param completionHandler An optional completion handler.
+ * @return A UADisposable token which can be used to cancel callback execution.
  */
-+ (void)land;
+- (UADisposable *)markMessagesRead:(NSArray *)messages completionHandler:(UAInboxMessageListCallbackBlock)completionHandler;
+
+/**
+ * Marks messages deleted. They will be marked locally as deleted and synced with
+ * Urban Airship on the next message retrieval.
+ *
+ * @param messages The array of messages to be marked deleted.
+ * @param completionHandler An optional completion handler.
+ * @return A UADisposable token which can be used to cancel callback execution.
+ */
+- (UADisposable *)markMessagesDeleted:(NSArray *)messages completionHandler:(UAInboxMessageListCallbackBlock)completionHandler;
+
+/**
+ * Fetch new messages from the server. If the associated user has not yet
+ * been created, this will be a no-op.
+ *
+ * @param successBlock A block to be executed if message retrieval succeeds.
+ * @param failureBlock A block to be executed if message retrieval fails.
+ * @return A UADisposable token which can be used to cancel callback execution.
+ * This value will be nil if the associated user has not yet been created.
+ */
+- (UADisposable *)retrieveMessageListWithSuccessBlock:(UAInboxMessageListCallbackBlock)successBlock
+                                     withFailureBlock:(UAInboxMessageListCallbackBlock)failureBlock;
 
 /**
  * Fetch new messages from the server.  This will result in a
- * callback to observers at [UAInboxMessageListObserver messageListWillLoad] when loading starts, 
- * and [UAInboxMessageListObserver messageListLoaded] upon completion.
- */
-- (void)retrieveMessageList;
+ * callback to the passed delegate at [UAInboxMessageListDelegate messageListLoadSucceeded] upon
+ * successful completion, and [UAInboxMessageListDelegate messageListLoadFailed] on failure. If
+ * The associated user has not yet been created, this will be a no-op.
+ *
+ * @param delegate An object implementing the `UAInboxMessageListDelegate` protocol.
+ * @return A UADisposable token which can be used to cancel callback execution.
+ * This value will be nil if the associated user has not yet been created.
+ *
+ * @deprecated As of 5.0.0. Use retrieveMessageListWithSuccessBlock:withFailureBlock: instead.
+ * */
+- (UADisposable *)retrieveMessageListWithDelegate:(id<UAInboxMessageListDelegate>)delegate __attribute__((deprecated("As of version 5.0.0")));
+
 
 /**
  * Update the message list by marking messages as read, or deleting them.
- * This eventually will result in an asyncrhonous observer callback to
- * [UAInboxMessageListObserver batchMarkAsReadFinished],
- * [UAInboxMessageListObserver batchMarkAsReadFailed],
- * [UAInboxMessageListObserver batchDeleteFinished], or
- * [UAInboxMessageListObserver batchDeleteFailed].
+ *
+ *
  * @param command the UABatchUpdateCommand to perform.
  * @param messageIndexSet an NSIndexSet of message IDs representing the subset of the inbox to update.
+ * @param successBlock A block to be executed if the batch update succeeds.
+ * @param failureBlock A block to be executed if the batch update fails.
+ * @return A UADisposable token which can be used to cancel callback execution.
+ * If the passed batch update command cannot be interpreted, this value will be nil.
+ *
+ * @deprecated As of 5.0.0. Use markMessagesRead:completionHandler: or markMessagesDeleted:completionHandler:
+ * instead. Marking messages read or deleted no longer requires an HTTP operation
+ * to succeed, so the failure block will no longer be called.
  */
-- (void)performBatchUpdateCommand:(UABatchUpdateCommand)command withMessageIndexSet:(NSIndexSet *)messageIndexSet;
+- (UADisposable *)performBatchUpdateCommand:(UABatchUpdateCommand)command
+                        withMessageIndexSet:(NSIndexSet *)messageIndexSet
+                           withSuccessBlock:(UAInboxMessageListCallbackBlock)successBlock
+                           withFailureBlock:(UAInboxMessageListCallbackBlock)failureBlock __attribute__((deprecated("As of version 5.0.0")));
+
+/**
+ * Update the message list by marking messages as read, or deleting them.
+ * This eventually will result in an asyncrhonous delegate callback to
+ * [UAInboxMessageListDelegate batchMarkAsReadFinished],
+ * [UAInboxMessageListDelegate batchMarkAsReadFailed],
+ * [UAInboxMessageListDelegate batchDeleteFinished], or
+ * [UAInboxMessageListDelegate batchDeleteFailed].
+ *
+ * @param command the UABatchUpdateCommand to perform.
+ * @param messageIndexSet an NSIndexSet of message IDs representing the subset of the inbox to update.
+ * @param delegate An object implementing the `UAInboxMessageListDelegate` protocol.
+ * @return A UADisposable token which can be used to cancel callback execution.
+ * If the passed batch update command cannot be interpreted, this value will be nil.
+ *
+ * @deprecated As of 5.0.0. Use markMessagesRead:completionHandler: or markMessagesDeleted:completionHandler:
+ * instead.
+ */
+- (UADisposable *)performBatchUpdateCommand:(UABatchUpdateCommand)command
+                        withMessageIndexSet:(NSIndexSet *)messageIndexSet
+                               withDelegate:(id<UAInboxMessageListDelegate>)delegate __attribute__((deprecated("As of version 5.0.0")));
+
 
 /**
  * Returns the number of messages currently in the inbox.
  * @return The message count as an integer.
  */
-- (int)messageCount;
+- (NSUInteger)messageCount;
 
 /**
  * Returns the message associated with a particular ID.
- * @param mid The message ID as an NSString.
+ * @param messageID The message ID as an NSString.
  * @return The associated UAInboxMessage object.
  */
-- (UAInboxMessage *)messageForID:(NSString *)mid;
+- (UAInboxMessage *)messageForID:(NSString *)messageID;
 
 /**
  * Returns the message associated with a particular message list index.
  * @param index The message list index as an integer.
  * @return The associated UAInboxMessage object.
+ *
+ * @deprecated As of 5.0.0. Inbox implementations should store a local copy of the messages array
+ * and perform its own message at index operations.
  */
-- (UAInboxMessage*)messageAtIndex:(int)index;
+- (UAInboxMessage*)messageAtIndex:(NSUInteger)index __attribute__((deprecated("As of version 5.0.0")));
 
 /**
  * Returns the index of a particular message within the message list.
  * @param message The UAInboxMessage object of interest.
  * @return The index of the message as an integer.
+ *
+ * @deprecated As of 5.0.0. Inbox implementations should store a local copy of the messages array
+ * and perform its own index of message operations.
  */
-- (int)indexOfMessage:(UAInboxMessage *)message;
+- (NSUInteger)indexOfMessage:(UAInboxMessage *)message __attribute__((deprecated("As of version 5.0.0")));
+
 
 /**
- * The list of messages on disk as an NSMutableArray.
+ * The list of messages on disk as an NSArray.
  */
-@property(nonatomic, retain) NSMutableArray *messages;
+@property (atomic, readonly, strong) NSArray *messages;
 
 /**
  * The number of messages that are currently unread or -1
  * if the message list is not loaded.
  */
-@property(assign) int unreadCount;
+@property (assign) NSInteger unreadCount;
 
 /**
- * YES if a batch update is currently being performed on the message list,
+ * YES if retrieving message list is currently in progress.
  * NO otherwise.
  */
-@property(assign) BOOL isBatchUpdating;
+@property (readonly) BOOL isRetrieving;
 
-@property(nonatomic, readonly, assign) BOOL isRetrieving;
+/**
+ * YES if message batching is currently in progress.
+ * NO otherwise.
+ */
+@property (readonly) BOOL isBatchUpdating;
 
 @end

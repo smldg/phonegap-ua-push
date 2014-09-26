@@ -6,39 +6,54 @@ This plugin supports PhoneGap/Cordova apps running on both iOS and Android.
 
 ### Version Requirements
 
-This plugin is meant to work with PhoneGap 3.0.0+ and the latest version of the Urban Airship library.
+This plugin is meant to work with Cordova 3.4.0+ and the latest version of the Urban Airship library.
 More documentation and integration guides for IOS and Android are availble on our
 [website](https://docs.urbanairship.com/display/DOCS/Client%3A+PhoneGap). 
 
 ### Older PhoneGap versions
 
-A older version of the plugin for Phonegap 2.6 - 2.9 can be found [here](https://github.com/urbanairship/phonegap-ua-push/tree/1.0.8). 
+An older unsupported version of the plugin for Phonegap 3.0 can be found [here](https://github.com/urbanairship/phonegap-ua-push/tree/2.3.3)
+and for Phonegap 2.6 - 2.9 can be found [here](https://github.com/urbanairship/phonegap-ua-push/tree/1.0.8).
 
 ### Contributing Code
 
 We accept pull requests! If you would like to submit a pull request, please fill out and submit a
 Code Contribution Agreement (http://urbanairship.com/legal/contribution-agreement/).
 
+## Migration
+
+A migration guide for newer releases of the plugin can be found [here](MIGRATION.md).
 
 ## Installation
 
 #### Automatic Installation using PhoneGap/Cordova CLI (iOS and Android)
-1. Install this plugin using PhoneGap/Cordova cli:
-```
-cordova plugin add https://github.com/urbanairship/phonegap-ua-push.git
-``` 
+1. For iOS, make sure you update your iOS project to Cordova iOS version 3.4.1 before installing this plugin.
 
-2. Modify the www/config.xml directory to contain (replacing with your configuration settings):
+        cordova platform update ios
 
-        <preference name="com.urbanairship.production_app_key" value="Your production app key" />
-        <preference name="com.urbanairship.production_app_secret" value="Your production app secret" />
-        <preference name="com.urbanairship.development_app_key" value="Your development app key" />
-        <preference name="com.urbanairship.development_app_secret" value="Your development app secret" />
-        <preference name="com.urbanairship.in_production" value="If the app is in production or not" />
-        <preference name="com.urbanairship.gcm_sender" value="Android only: Your GCM sender id" />
+2. Install this plugin using PhoneGap/Cordova cli:
 
-3. If your app supports Android API < 14, then you have to manually instrument any Android Activities to 
-have proper analytics.  
+        phonegap local plugin add https://github.com/urbanairship/phonegap-ua-push.git
+
+3. Modify the www/config.xml directory to contain (replacing with your configuration settings):
+
+        <!-- Urban Airship app credentials -->
+        <preference name="com.urbanairship.production_app_key" value="PRODUCTION_APP_KEY" />
+        <preference name="com.urbanairship.production_app_secret" value="PRODUCTION_APP_SECRET" />
+        <preference name="com.urbanairship.development_app_key" value="DEVELOPMENT_APP_KEY" />
+        <preference name="com.urbanairship.development_app_secret" value="DEVELOPMENT_APP_SECRET" />
+
+        <!-- If the app is in production or not -->
+        <preference name="com.urbanairship.in_production" value="true | false" />
+
+        <!-- Enable push when the application launches (instead of waiting for enablePush js call).  Defaults to false -->
+        <preference name="com.urbanairship.enable_push_onlaunch" value="true | false" />
+
+        <!-- Only required for Android. -->
+        <preference name="com.urbanairship.gcm_sender" value="GCM_SENDER_ID" />
+
+
+4. If your app supports Android API < 14, then you have to manually instrument any Android Activities to have proper analytics.
 See [Instrumenting Android Analytics](http://docs.urbanairship.com/build/android_features.html#setting-up-analytics-minor-assembly-required). 
 
 #### iOS manual installation (unnecessary if installed automatically)
@@ -67,15 +82,25 @@ See [Instrumenting Android Analytics](http://docs.urbanairship.com/build/android
 
 
         <feature name="PushNotificationPlugin">
-            <param name="android-package" value="com.urbanairship.phonegap.PushNotificationPlugin" />
+            <param name="ios-package" value="PushNotificationPlugin" />
             <param name="onload" value="true" />
         </feature>
         
-        <preference name="com.urbanairship.production_app_key" value="Your production app key" />
-        <preference name="com.urbanairship.production_app_secret" value="Your production app secret" />
-        <preference name="com.urbanairship.development_app_key" value="Your development app key" />
-        <preference name="com.urbanairship.development_app_secret" value="Your development app secret" />
-        <preference name="com.urbanairship.in_production" value="If the app is in production or not" />
+         <!-- Urban Airship app credentials -->
+        <preference name="com.urbanairship.production_app_key" value="PRODUCTION_APP_KEY" />
+        <preference name="com.urbanairship.production_app_secret" value="PRODUCTION_APP_SECRET" />
+        <preference name="com.urbanairship.development_app_key" value="DEVELOPMENT_APP_KEY" />
+        <preference name="com.urbanairship.development_app_secret" value="DEVELOPMENT_APP_SECRET" />
+
+        <!-- If the app is in production or not -->
+        <preference name="com.urbanairship.in_production" value="true | false" />
+
+        <!-- Enable push when the application launches (instead of waiting for enablePush js call).  Defaults to false -->
+        <preference name="com.urbanairship.enable_push_onlaunch" value="true | false" />
+
+1. Copy www/PushNotification.js into the project's www directory
+
+1. Require the PushNotification module `var PushNotification = cordova.require('<Path to PushNotification.js>')`
 
 #### Android manual installation (unnecessary if installed automatically)
 1. Copy src/Android/*.java files to your projects src/com/urbanairship/phonegap/ directory
@@ -135,16 +160,28 @@ See [Instrumenting Android Analytics](http://docs.urbanairship.com/build/android
             <param name="onload" value="true" />
         </feature>
 
-        <preference name="com.urbanairship.production_app_key" value="Your production app key" />
-        <preference name="com.urbanairship.production_app_secret" value="Your production app secret" />
-        <preference name="com.urbanairship.development_app_key" value="Your development app key" />
-        <preference name="com.urbanairship.development_app_secret" value="Your development app secret" />
-        <preference name="com.urbanairship.in_production" value="If the app is in production or not" />
-        <preference name="com.urbanairship.gcm_sender" value="Android only: Your GCM sender id" />
+         <!-- Urban Airship app credentials -->
+        <preference name="com.urbanairship.production_app_key" value="PRODUCTION_APP_KEY" />
+        <preference name="com.urbanairship.production_app_secret" value="PRODUCTION_APP_SECRET" />
+        <preference name="com.urbanairship.development_app_key" value="DEVELOPMENT_APP_KEY" />
+        <preference name="com.urbanairship.development_app_secret" value="DEVELOPMENT_APP_SECRET" />
+
+        <!-- If the app is in production or not -->
+        <preference name="com.urbanairship.in_production" value="true | false" />
+
+        <!-- Enable push when the application launches (instead of waiting for enablePush js call).  Defaults to false -->
+        <preference name="com.urbanairship.enable_push_onlaunch" value="true | false" />
+
+        <!-- Only required for Android. -->
+        <preference name="com.urbanairship.gcm_sender" value="GCM_SENDER_ID" />
 
 1. If your app supports Android API < 14 (pre ICS), then need to manually instrument any Android Activities
 to get proper analytics.  
 See [Instrumenting Android Analytics](http://docs.urbanairship.com/build/android_features.html#setting-up-analytics-minor-assembly-required).
+
+1. Copy www/PushNotification.js into the project's www directory
+
+1. Require the PushNotification module `var PushNotification = cordova.require('<Path to PushNotification.js>')`
 
 ## Example
 A full example can be found in Examples.  To run it, copy the files:
@@ -153,28 +190,24 @@ A full example can be found in Examples.  To run it, copy the files:
 - Examples/js/* to www/js
 
 #### Basic Example
-
-    push = window.plugins.pushNotification;
-
-    // Callback for when a device has registered with Urban Airship.
-    // https://docs.urbanairship.com/display/DOCS/Server%3A+Android+Push+API#ServerAndroidPushAPI-Registration
-    push.registerEvent('registration', function (error, id) {
-        if (error) {
+    
+    // Register for any urban airship events
+    document.addEventListener("urbanairship.registration", function (event) {
+        if (event.error) {
             console.log('there was an error registering for push notifications');
         } else {
-            console.log("Registered with ID: " + id);
+            console.log("Registered with ID: " + event.pushID);
         } 
-    });
+    }, false)
 
-    // Callback for when the app is running, and receives a push.
-    push.registerEvent('push', function (push) {
-        console.log("Got push: " + push.message)
-    });
+    document.addEventListener("urbanairship.push", function (event) {
+        console.log("Incoming push: " + event.message)
+    }, false)
 
     // Set tags on a device, that you can push to
     // https://docs.urbanairship.com/display/DOCS/Server%3A+Tag+API
-    push.setTags(["loves_cats", "shops_for_games"], function () {
-        push.getTags(function (obj) {
+    PushNotification.setTags(["loves_cats", "shops_for_games"], function () {
+        PushNotification.getTags(function (obj) {
             obj.tags.forEach(function (tag) {
                 console.log("Tag: " + tag);
             });
@@ -183,14 +216,14 @@ A full example can be found in Examples.  To run it, copy the files:
 
     // Set an alias, this lets you tie a device to a user in your system
     // https://docs.urbanairship.com/display/DOCS/Server%3A+iOS+Push+API#ServeriOSPushAPI-Alias
-    push.setAlias("awesomeuser22", function () {
-        push.getAlias(function (alias) {
+    PushNotification.setAlias("awesomeuser22", function () {
+        PushNotification.getAlias(function (alias) {
             console.log("The user formerly known as " + alias)
         });
     });
 
     // Check if push is enabled
-    push.isPushEnabled(function (enabled) {
+    PushNotification.isPushEnabled(function (enabled) {
         if (enabled) {
             console.log("Push is enabled! Fire away!");
         }
@@ -258,7 +291,7 @@ On iOS, registration for push requires specifying what combination of badges, so
 alerts are desired.  This function must be explicitly called in order to begin the
 registration process.  For example:
 
-    push.registerForNotificationTypes(push.notificationType.sound | push.notificationType.alert)
+    PushNotification.registerForNotificationTypes(PushNotification.notificationType.sound | PushNotification.notificationType.alert)
 
 *Available notification types:*
 
@@ -272,7 +305,7 @@ registration process.  For example:
 
 All status callbacks are passed a boolean indicating the result of the request:
 
-    push.isPushEnabled(function (has_push) {
+    PushNotification.isPushEnabled(function (has_push) {
         if (has_push) {
             $('#pushEnabled').prop("checked", true)
         }
@@ -330,7 +363,7 @@ Indicates whether Quiet Time is currently in effect.
 
 Get information about the push that caused the application to be launched. When a user clicks on a push to launch your app, this functions callback will be passed a Push object consisting of the alert message, and an object containing extra key/value pairs.  Otherwise the incoming message and extras will be an empty string and an empty object, respectively.
 
-    push.getIncoming(function (incoming) {
+    PushNotification.getIncoming(function (incoming) {
         if (incoming.message) {
             alert("Incoming push message: " + incoming.message;
         }
@@ -409,6 +442,11 @@ Set the current application badge number
 
 Reset the badge number to zero
 
+#### clearNotifications(callback)
+**Note:** Android only
+
+Clears the notifications posted by the application.
+
 ### Location
 
 #### recordCurrentLocation(callback)
@@ -417,28 +455,42 @@ Report the location of the device.
 
 ### Events
 
+**Note:** If your application supports Android and it listens to any of the events, you should 
+start listening for events on both 'deviceReady' and 'resume' and stop listening for events on 'pause'.  
+This will prevent the events from being handled in the background.
+
 ### Incoming Push
 
-*Callback arguments:* (Push push)
+Event:
 
-This event is trigerred when your application is open, and a push comes in.
+    {
+        message: <Alert Message>,
+        extras: <Extras Dictionary>
+    }
 
-    push.registerEvent('push', function (push) {
-        alert(push.message);
+This event is triggered when a push notification is received.
+
+    document.addEventListener('urbanairship.push', function(event) {
+        alert(event.message);
     });
 
 
 ### Registration
 
-*Callback arguments:* (Boolean error, String id)
+Event:
 
-This event is trigerred when your application recieves a registration response from Urban Airship.
+    {
+        error: <Error message when registration failed>,
+        pushID: <Push address>
+    }
 
-    push.registerEvent('registration', function (error, id) {
-        if (error) {
+This event is triggered when your application receives a registration response from Urban Airship.
+
+    document.addEventListener('urbanairship.registration', function(event) {
+        if (event.error) {
             console.log('There was an error registering for push notifications.');
         } else {
-            console.log("Registered with ID: " + id);
+            console.log("Registered with ID: " + event.pushID);
         } 
     });
     

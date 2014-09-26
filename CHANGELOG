@@ -1,3 +1,71 @@
+==================================
+Version 2.5.0 - September 22, 2014
+==================================
+- Updated Urban Airship iOS Library to 5.0.0
+
+==================================
+Version 2.4.0 - April 23, 2014
+==================================
+- Updated for Cordova 3.4.0+
+- Updated Urban Airship iOS Library to 4.0.0
+- Updated Urban Airship Android Library to 4.0.1,
+CHANGELOG: http://docs.urbanairship.com/reference/libraries/android/latest/android_changelog.txt
+
+==================================
+Version 2.3.3 - April 18, 2014
+==================================
+- Added PushNotification.clearNotifications() to clear all notifications for the application on Android.
+
+==================================
+Version 2.3.2 - March 10, 2014
+==================================
+- Updated Urban Airship iOS Library to 3.0.3, which fixed detectProvisioningMode behavior when
+inProduction is not set.
+
+==================================
+Version 2.3.1 - February 25, 2014
+==================================
+- Updated Urban Airship Android Library to 3.3.1,
+CHANGELOG: http://docs.urbanairship.com/reference/libraries/android/latest/android_changelog.txt
+- Fixes crash with Android background location
+
+==================================
+Version 2.3.0 - January 15, 2014
+==================================
+- Updated Urban Airship Android Library to 3.3.0,
+CHANGELOG: http://docs.urbanairship.com/reference/libraries/android/latest/android_changelog.txt
+- Add config to enable push on launch.  When push is not enabled on launch,
+it will be enabled once enablePush is called from javascript.
+
+==================================
+Version 2.2.2 - January 2, 2014
+==================================
+- Start iOS location provider automatically when location is enabled
+
+==================================
+Version 2.2.1 - December 30, 2013
+==================================
+- Fix iOS location bug
+
+==================================
+Version 2.2.0 - November 18, 2013
+==================================
+- Use DOM events for incoming push and registration events
+- Use js-module for including the PushNotification.js file
+- Updated and fixed issues in the provided example
+
+==================================
+Version 2.1.1 - November 18, 2013
+==================================
+- Update device plugin dependency id
+- Add log statement to iOS push plugin on initialize
+
+==================================
+Version 2.1.0 - September 20, 2013
+==================================
+- Update Urban Airship iOS Library to 3.0.0, CHANGELOG: https://github.com/urbanairship/ios-library/blob/3.0.0/CHANGELOG
+- Requires Xcode 5 now
+
 ==============================
 Version 2.0.1 - August 8, 2013
 ==============================

@@ -1,5 +1,5 @@
 /*
-Copyright 2009-2013 Urban Airship Inc. All rights reserved.
+Copyright 2009-2014 Urban Airship Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -29,37 +29,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 @class UAInboxMessageList;
 @class UAInboxPushHandler;
-
-#define INBOX_UI_CLASS @"UAInboxUI"
-
-/**
- * All UIs should implement this protocol to interact with the UAInbox object.
- */
-@protocol UAInboxUIProtocol
-@required
-
-/** 
- * Hide the inbox UI and perform any resource cleanup.
- */
-+ (void)quitInbox;
-
-/**
- * Display the inbox UI.
- *
- * @param parentViewController The parent view controller
- * @param animated YES to animate the transition
- */
-+ (void)displayInboxInViewController:(UIViewController *)parentViewController animated:(BOOL)animated;
-
-/**
- * Display the inbox UI and open a specific message.
- *
- * @param messageID The ID for the message to display
- * @param parentViewController The parent view controller
- */
-+ (void)displayMessageWithID:(NSString *)messageID inViewController:(UIViewController *)parentViewController;
-
-@end
+@class UAInboxAPIClient;
 
 
 /**
@@ -67,7 +37,10 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Rich Push messages.
  *
  * UAInboxDefaultJSDelegate is a reference implementation of this protocol.
+ *
+ * @deprecated As of version 3.2. Replaced with UAJavaScriptDelegate.
  */
+__attribute__((deprecated("As of version 3.2")))
 @protocol UAInboxJavaScriptDelegate <NSObject>
 
 /**
@@ -88,6 +61,10 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * The default implementation is UAInboxDefaultJSDelegate. It is designed to work with
  * the UACallback.js file that ships with the sample project.
+ *
+ * @param args Array of js delegate arguments
+ * @param options Dictionary of js delegate options
+ * @return Callback string indicating success or failure
  */ 
 - (NSString *)callbackArguments:(NSArray *)args withOptions:(NSDictionary *)options;
 
@@ -104,85 +81,37 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 SINGLETON_INTERFACE(UAInbox);
 
-///---------------------------------------------------------------------------------------
-/// @name Custom UI Specification
-///---------------------------------------------------------------------------------------
-
-/** Get the current UI class. Defaults to UAInboxUI. */
-- (Class)uiClass;
-
-/**
- * Set a custom UI class. Defaults to UAInboxUI.
- *
- * @param customUIClass The custom UI class. The class must implement the UAInboxUIProtocol.
- */
-+ (void)useCustomUI:(Class)customUIClass;
-
-/**
- * Hides the Rich Push Inbox UI and cleans up as necessary.
- *
- * Calls [UAInboxUIProtocol quitInbox] on the UI class.
- */
-+ (void)quitInbox;
-
-/**
- * Display the inbox UI.
- *
- * Calls [UAInboxUIProtocol displayInbox: animated:] on the UI class.
- *
- * @param parentViewController The parent view controller
- * @param animated YES to animate the transition
- */
-+ (void)displayInboxInViewController:(UIViewController *)parentViewController animated:(BOOL)animated;
-/**
- * Display the inbox UI and open a specific message.
- *
- * @param messageID The ID for the message to display
- * @param parentViewController The parent view controller
- *
- * Calls [UAInboxUIProtocol displayMessage: message:] on the UI class.
- */
-+ (void)displayMessageWithID:(NSString *)messageID inViewController:(UIViewController *)parentViewController;
-
 /**
  * Tear down and clean up any resources. This method should be called when the inbox is no
  * longer needed.
  */
 + (void)land;
 
-@property (nonatomic, assign) UAInboxMessageList *messageList;
-@property (nonatomic, retain) UAInboxPushHandler *pushHandler;
+/**
+ * The list of Rich Push Inbox messages.
+ */
+@property (nonatomic, strong) UAInboxMessageList *messageList;
 
 /**
- * The Javascript delegate.
+ * Handles incoming rich push messages.
+ */
+@property (nonatomic, strong) UAInboxPushHandler *pushHandler;
+
+/**
+ * The Inbox API Client
+ */
+@property (nonatomic, readonly, strong) UAInboxAPIClient *client;
+
+
+/**
+ * The user-configurable JavaScript delegate, implementing
+ * the deprecated UAInboxJavaScriptDelegate protocol.
  * 
  * NOTE: this delegate is not retained.
  */
-@property (nonatomic, assign) id<UAInboxJavaScriptDelegate> jsDelegate;
-
-///---------------------------------------------------------------------------------------
-/// @name URL Caches
-///---------------------------------------------------------------------------------------
-
-/**
- * Determines whether the contents of Rich Push messges should be cached
- * using the custom Inbox-specific URL cache. If set to YES, message contents will be
- * aggressively persisted to disk and available for offline viewing.
- *
- * Defaults to YES.
- */
-@property(nonatomic, assign) BOOL shouldUseInboxCache;
-
-/**
- * The default URL Cache ([NSURLCache sharedURLCache]).
- * This is saved prior to switching the URL Cache to the inboxCache.
- */
-@property(retain) NSURLCache *clientCache;
-
-/**
- * An Inbox-specific URL cache used to cache the contents of 
- * Rich Push messages for offline viewing.
- */
-@property(retain) NSURLCache *inboxCache;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+@property (nonatomic, weak) id<UAInboxJavaScriptDelegate> jsDelegate;
+#pragma clang diagnostic pop
 
 @end

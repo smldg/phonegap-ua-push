@@ -1,5 +1,8 @@
 package com.urbanairship.phonegap;
 
+import android.app.NotificationManager;
+import android.content.Context;
+
 import android.os.RemoteException;
 
 import com.urbanairship.Autopilot;
@@ -37,7 +40,7 @@ public class PushNotificationPlugin extends CordovaPlugin {
     private final static List<String> knownActions = Arrays.asList("enablePush", "disablePush", "enableLocation", "disableLocation", "enableBackgroundLocation",
             "disableBackgroundLocation", "isPushEnabled", "isSoundEnabled", "isVibrateEnabled", "isQuietTimeEnabled", "isInQuietTime", "isLocationEnabled",
             "getIncoming", "getPushID", "getQuietTime", "getTags", "getAlias", "setAlias", "setTags", "setSoundEnabled", "setVibrateEnabled",
-            "setQuietTimeEnabled", "setQuietTime", "recordCurrentLocation");
+            "setQuietTimeEnabled", "setQuietTime", "recordCurrentLocation", "clearNotifications");
 
     public static  String incomingAlert = "";
     public static Map<String, String> incomingExtras = new HashMap<String, String>();
@@ -80,19 +83,7 @@ public class PushNotificationPlugin extends CordovaPlugin {
             return;
         }
 
-        JSONObject data = notificationObject(message, extras);
-        String js = String.format(
-                "window.plugins.pushNotification.pushCallback(%s);",
-                data.toString());
-        Logger.info("Javascript Calling back: " + js);
-
-        try {
-            instance.webView.sendJavascript(js);
-        } catch (NullPointerException npe) {
-            Logger.info("unable to send javascript in raisepush");
-        } catch (Exception e) {
-            Logger.error("unexpected exception in raisePush", e);
-        }
+        sendEvent("urbanairship.push", notificationObject(message, extras).toString());
     }
 
     static void raiseRegistration(Boolean valid, String pushID) {
@@ -102,25 +93,28 @@ public class PushNotificationPlugin extends CordovaPlugin {
 
         JSONObject data = new JSONObject();
         try {
-            data.put("valid", valid);
-            data.put("pushID", pushID);
+            if (valid) {
+                data.put("pushID", pushID);
+            } else {
+                data.put("error", "Invalid registration.");
+            }
         } catch (JSONException e) {
-            Logger.error("Error In raiseRegistration", e);
+            Logger.error("Error in raiseRegistration", e);
         }
-        String js = String.format(
-                "window.plugins.pushNotification.registrationCallback(%s);",
-                data.toString());
-        Logger.info("Javascript Calling back: " + js);
 
-        try {
-            instance.webView.sendJavascript(js);
-        } catch (NullPointerException npe) {
-            Logger.info("unable to send javascript in raiseRegistration");
-        } catch (Exception e) {
-            Logger.error("unexpected exception in raisePush", e);
-        }
+        sendEvent("urbanairship.registration", data.toString());
     }
 
+    static void sendEvent(String event, String data) {
+        if (instance == null) {
+            return;
+        }
+
+        Logger.info("Sending event " + event + ": " + data);
+        String eventURL = String.format("javascript:try{cordova.fireDocumentEvent('%s', %s);}catch(e){console.log('exception firing event %s from native');};", event, data, event);
+
+        instance.webView.loadUrl(eventURL);
+    }
 
     @Override
     public boolean execute(final String action, final JSONArray data, final CallbackContext callbackContext) {
@@ -145,7 +139,12 @@ public class PushNotificationPlugin extends CordovaPlugin {
         return true;
     }
 
-    // Actions
+    void clearNotifications(JSONArray data, CallbackContext callbackContext) {
+        Context context = UAirship.shared().getApplicationContext();
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancelAll();
+        callbackContext.success();
+    }
 
     void enablePush(JSONArray data, CallbackContext callbackContext) {
         if (requirePushServiceEnabled(callbackContext)) {
